@@ -1,0 +1,151 @@
+; =============================================================
+; HP Aruba 2530-24-PoE+ (J9779A) — sanitized running config
+; ArubaOS-Switch 16.11.0029
+; Role: L2 switch — MSTP, VLAN trunking, port mirror to IDS
+; Secrets stripped.
+; =============================================================
+
+hostname "lab-sw01"
+
+time daylight-time-rule continental-us-and-canada
+time timezone -300
+
+; -----------------------------------------------------------
+; SNTP — Cloudflare
+; -----------------------------------------------------------
+timesync sntp
+sntp unicast
+sntp server priority 1 time.cloudflare.com
+
+; -----------------------------------------------------------
+; VLANs
+; -----------------------------------------------------------
+vlan 1
+   name "DEFAULT_VLAN"
+   no ip address
+   no untagged 1-24
+   exit
+
+vlan 10
+   name "MGMT"
+   no ip address
+   exit
+
+vlan 20
+   name "HOME"
+   tagged 1
+   exit
+
+vlan 30
+   name "WIRELESS"
+   tagged 1
+   exit
+
+vlan 40
+   name "KIDS"
+   tagged 1
+   exit
+
+vlan 50
+   name "GUESTS"
+   tagged 1
+   exit
+
+vlan 60
+   name "SERVER"
+   tagged 1,2,3,4
+   exit
+
+; Mgmt IP for the switch itself
+vlan 20
+   ip address 192.168.20.250 255.255.255.0
+   exit
+
+ip default-gateway 192.168.20.1
+
+; -----------------------------------------------------------
+; Spanning tree — MSTP root, BPDU protection on edge ports
+; -----------------------------------------------------------
+spanning-tree
+spanning-tree mode mstp
+spanning-tree priority 0
+
+interface 1
+   name "uplink-asa-trunk"
+   spanning-tree priority 0
+   exit
+
+interface 2-4
+   name "server-vlan-clients"
+   spanning-tree bpdu-protection
+   spanning-tree port-fast
+   exit
+
+interface 5-23
+   spanning-tree bpdu-protection
+   spanning-tree port-fast
+   disable
+   exit
+
+interface 24
+   name "span-dst-suricata"
+   exit
+
+; -----------------------------------------------------------
+; Port mirror — port 1 (ASA trunk) → port 24 (Suricata)
+; -----------------------------------------------------------
+mirror 1 port 24
+interface 1
+   monitor all both mirror 1
+   exit
+
+; -----------------------------------------------------------
+; Management — SSH only, restricted ciphers
+; -----------------------------------------------------------
+no telnet-server
+no web-management
+no web-management plaintext
+ip ssh
+ip ssh version 2
+ip ssh server cipher aes256-ctr aes256-cbc
+
+; SNMPv2c off, SNMPv3 only with auth+priv
+no snmp-server community public
+no snmp-server community private
+no snmp-server enable
+snmpv3 enable
+snmpv3 user "wazuh-mon" auth sha REDACTED priv aes REDACTED
+snmpv3 group "MgmtView" user "wazuh-mon" sec-model ver3
+
+; -----------------------------------------------------------
+; AAA — local user, password redacted
+; -----------------------------------------------------------
+aaa authentication ssh login local
+password manager user-name admin REDACTED
+password operator REDACTED
+
+; -----------------------------------------------------------
+; Console + idle timeout
+; -----------------------------------------------------------
+console idle-timeout 600
+console terminal vt100
+banner motd "Authorized access only. All activity is logged."
+
+; -----------------------------------------------------------
+; Logging
+; -----------------------------------------------------------
+logging 192.168.60.20
+logging facility local6
+logging severity info
+
+; -----------------------------------------------------------
+; Mgmt ACL — SSH only from Home
+; -----------------------------------------------------------
+ip access-list standard "MGMT-SSH"
+   10 permit 192.168.20.0 0.0.0.255
+   20 deny any log
+   exit
+
+ip ssh access-list "MGMT-SSH"
+
+; end of running-config

@@ -1,0 +1,185 @@
+# =============================================================
+# MikroTik RB5009UPr+S+ — sanitized export
+# RouterOS 7.18.2
+# Role: Edge router — dual-PPPoE, NAT, PCC load-balance, DDNS
+# Public IPs redacted as XX.XX.XX.X. Secrets stripped.
+# =============================================================
+
+/system identity
+set name=edge-router
+
+/system clock
+set time-zone-name=Europe/Bucharest
+
+/system ntp client
+set enabled=yes servers=time.cloudflare.com
+
+# -----------------------------------------------------------
+# Interface lists (used by firewall rules)
+# -----------------------------------------------------------
+/interface list
+add name=WAN
+add name=LAN
+
+/interface list member
+add interface=ether2 list=WAN comment="ISP1 PPPoE physical"
+add interface=ether4 list=WAN comment="ISP2 PPPoE physical"
+add interface=pppoe-out1 list=WAN
+add interface=pppoe-out2 list=WAN
+add interface=ether1 list=LAN comment="LAN to ASA outside1 (10.0.0.0/30 P2P)"
+
+# -----------------------------------------------------------
+# PPPoE clients — credentials redacted
+# -----------------------------------------------------------
+/interface pppoe-client
+add name=pppoe-out1 interface=ether2 user=REDACTED password=REDACTED \
+    add-default-route=yes default-route-distance=1 \
+    use-peer-dns=no allow=pap,chap,mschap1,mschap2 \
+    keepalive-timeout=60 disabled=no
+
+add name=pppoe-out2 interface=ether4 user=REDACTED password=REDACTED \
+    add-default-route=yes default-route-distance=1 \
+    use-peer-dns=no allow=pap,chap,mschap1,mschap2 \
+    keepalive-timeout=60 disabled=no
+
+# -----------------------------------------------------------
+# LAN-side P2P to the ASA outside interface
+# -----------------------------------------------------------
+/ip address
+add address=10.0.0.1/30 interface=ether1 comment="P2P to ASA outside1"
+
+# -----------------------------------------------------------
+# DNS forwarder
+# -----------------------------------------------------------
+/ip dns
+set servers=192.168.60.30 \
+    allow-remote-requests=yes \
+    cache-size=4096 \
+    max-concurrent-queries=200
+
+# -----------------------------------------------------------
+# IP services — only SSH, only on mgmt
+# -----------------------------------------------------------
+/ip service
+set ssh address=192.168.20.0/24 disabled=no
+set telnet disabled=yes
+set ftp disabled=yes
+set www disabled=yes
+set api disabled=yes
+set api-ssl disabled=yes
+set winbox address=192.168.20.0/24 disabled=no
+
+/ip ssh
+set strong-crypto=yes allow-none-crypto=no forwarding-enabled=no
+
+# -----------------------------------------------------------
+# Firewall — input chain default deny on WAN
+# -----------------------------------------------------------
+/ip firewall filter
+add chain=input action=accept connection-state=established,related \
+    comment="established/related"
+add chain=input action=accept protocol=icmp limit=50,5:packet \
+    comment="ICMP rate-limited"
+add chain=input action=accept in-interface-list=LAN \
+    comment="LAN trusted"
+add chain=input action=drop in-interface-list=WAN \
+    comment="drop everything else from WAN"
+
+# Forward chain — explicit FastTrack for established
+add chain=forward action=fasttrack-connection \
+    connection-state=established,related \
+    comment="FastTrack for established/related"
+add chain=forward action=accept connection-state=established,related
+add chain=forward action=drop connection-state=invalid
+
+# -----------------------------------------------------------
+# NAT — masquerade on every WAN exit
+# -----------------------------------------------------------
+/ip firewall nat
+add chain=srcnat action=masquerade out-interface=pppoe-out1 \
+    comment="NAT for ISP1"
+add chain=srcnat action=masquerade out-interface=pppoe-out2 \
+    comment="NAT for ISP2"
+
+# Honeypot DNAT — tcp/4444 + tcp/4445 to isolated host
+add chain=dstnat action=dst-nat protocol=tcp dst-port=4444 \
+    in-interface-list=WAN to-addresses=192.168.60.99 to-ports=4444 \
+    comment="honeypot DNAT 4444"
+add chain=dstnat action=dst-nat protocol=tcp dst-port=4445 \
+    in-interface-list=WAN to-addresses=192.168.60.99 to-ports=4445 \
+    comment="honeypot DNAT 4445"
+
+# -----------------------------------------------------------
+# Mangle — MSS clamp + PCC for dual-WAN load-balance
+# -----------------------------------------------------------
+/ip firewall mangle
+add chain=forward action=change-mss new-mss=1452 protocol=tcp tcp-flags=syn \
+    passthrough=yes comment="MSS clamp for PPPoE"
+
+# Mark every new connection with one of two PCC buckets
+add chain=prerouting action=mark-connection new-connection-mark=ISP1_conn \
+    in-interface=ether1 connection-state=new \
+    per-connection-classifier=both-addresses-and-ports:2/0 passthrough=yes \
+    comment="PCC mark ISP1"
+add chain=prerouting action=mark-connection new-connection-mark=ISP2_conn \
+    in-interface=ether1 connection-state=new \
+    per-connection-classifier=both-addresses-and-ports:2/1 passthrough=yes \
+    comment="PCC mark ISP2"
+
+# Apply routing-mark based on connection-mark
+add chain=prerouting action=mark-routing new-routing-mark=via_ISP1 \
+    connection-mark=ISP1_conn passthrough=no
+add chain=prerouting action=mark-routing new-routing-mark=via_ISP2 \
+    connection-mark=ISP2_conn passthrough=no
+
+# -----------------------------------------------------------
+# Routes — per-PCC plus default fallback
+# -----------------------------------------------------------
+/ip route
+add gateway=pppoe-out1 routing-mark=via_ISP1 distance=1 \
+    check-gateway=ping comment="ISP1 routed flows"
+add gateway=pppoe-out2 routing-mark=via_ISP2 distance=1 \
+    check-gateway=ping comment="ISP2 routed flows"
+
+# Fallback — if either ISP is up the unmarked default still works
+add gateway=pppoe-out1 distance=1 check-gateway=ping
+add gateway=pppoe-out2 distance=2 check-gateway=ping
+
+# -----------------------------------------------------------
+# Logging — remote syslog to Wazuh
+# -----------------------------------------------------------
+/system logging action
+add name=remote-wazuh target=remote remote=192.168.60.20 \
+    remote-port=514 src-address=192.168.20.250
+
+/system logging
+add topics=info action=remote-wazuh
+add topics=warning action=remote-wazuh
+add topics=error action=remote-wazuh
+add topics=critical action=remote-wazuh
+add topics=pppoe action=remote-wazuh
+add topics=firewall action=remote-wazuh
+
+# -----------------------------------------------------------
+# DDNS — 5-min cron pushes public IP to Cloudflare
+# -----------------------------------------------------------
+/system scheduler
+add name=ddns-update interval=5m start-time=startup \
+    on-event=ddns-script
+
+# (the ddns-script body is not in the export; it lives in
+#  /system script and consumes secrets — those are kept in the vault)
+
+# -----------------------------------------------------------
+# User accounts — passwords redacted
+# -----------------------------------------------------------
+/user
+add name=admin group=full password=REDACTED \
+    comment="primary admin — SSH key only"
+add name=backup-readonly group=read password=REDACTED \
+    comment="read-only — used by daily config backup"
+
+/user ssh-keys import public-key-file=admin.pub user=admin
+/user ssh-keys import public-key-file=backup.pub user=backup-readonly
+
+# end of export

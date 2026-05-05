@@ -1,0 +1,57 @@
+# OS junk
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.~lock.*
+*.code-workspace
+
+# Backups & temp
+*.bak
+*.tmp
+*.orig
+*.old
+*.rej
+
+# Local secrets — never commit
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+*.pfx
+*.p12
+*-private*
+id_rsa
+id_ed25519
+client.keys
+
+# Pre-redaction raw config exports — must never reach the repo
+configs/raw-*.cfg
+configs/raw-*.rsc
+configs/*.unredacted.*
+*.cfg
+*.rsc
+!configs/*.cfg.example
+!configs/*.rsc.example
+
+# Build / lock-state for tooling we may add later
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+dist/
+build/
+
+# Logs accidentally captured
+*.log
+logs/

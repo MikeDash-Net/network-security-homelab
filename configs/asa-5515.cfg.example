@@ -1,0 +1,205 @@
+! =============================================================
+! Cisco ASA 5515-X — sanitized running-config
+! ASA 9.6(4)34
+! Role: L3 firewall — inter-VLAN policy, threat-detection, NAT
+! Public IPs redacted as XX.XX.XX.X. Secrets stripped.
+! =============================================================
+
+hostname asa-fw
+domain-name lab.local
+enable password REDACTED encrypted
+
+names
+
+! -----------------------------------------------------------
+! Interfaces
+! -----------------------------------------------------------
+interface GigabitEthernet0/0
+ description ** RX-failed 2026-04-22 — do not use **
+ shutdown
+!
+interface GigabitEthernet0/3
+ description ** outside1 — PPPoE to MikroTik (post 2026-04-22 migration) **
+ nameif outside1
+ security-level 0
+ ip address 10.0.0.2 255.255.255.252
+!
+interface GigabitEthernet0/1
+ description ** inside trunk to Aruba port 1 **
+ no nameif
+ no security-level
+ no ip address
+!
+interface GigabitEthernet0/1.20
+ description ** Home VLAN **
+ vlan 20
+ nameif home
+ security-level 100
+ ip address 192.168.20.1 255.255.255.0
+!
+interface GigabitEthernet0/1.30
+ description ** Wireless VLAN **
+ vlan 30
+ nameif wireless
+ security-level 70
+ ip address 192.168.30.1 255.255.255.0
+!
+interface GigabitEthernet0/1.40
+ description ** Kids VLAN **
+ vlan 40
+ nameif kids
+ security-level 50
+ ip address 192.168.40.1 255.255.255.0
+!
+interface GigabitEthernet0/1.50
+ description ** Guest VLAN **
+ vlan 50
+ nameif guest
+ security-level 30
+ ip address 192.168.50.1 255.255.255.0
+!
+interface GigabitEthernet0/1.60
+ description ** Server VLAN **
+ vlan 60
+ nameif server
+ security-level 80
+ ip address 192.168.60.1 255.255.255.0
+
+! -----------------------------------------------------------
+! Object groups (sources / dests)
+! -----------------------------------------------------------
+object network home-net
+ subnet 192.168.20.0 255.255.255.0
+object network wireless-net
+ subnet 192.168.30.0 255.255.255.0
+object network kids-net
+ subnet 192.168.40.0 255.255.255.0
+object network guest-net
+ subnet 192.168.50.0 255.255.255.0
+object network server-net
+ subnet 192.168.60.0 255.255.255.0
+
+object-group service mgmt-tcp
+ service-object tcp eq 22
+ service-object tcp eq 8006
+ service-object tcp eq 8443
+
+! -----------------------------------------------------------
+! Inter-VLAN ACLs
+! See policy/inter-vlan-acl.md for the full home_access rationale
+! -----------------------------------------------------------
+access-list home_access extended permit udp object home-net host 10.0.0.1 eq domain
+access-list home_access extended permit tcp object home-net host 10.0.0.1 eq domain
+access-list home_access extended permit tcp object home-net host 10.0.0.1 eq 8291
+access-list home_access extended permit tcp object home-net host 10.0.0.1 eq ssh
+access-list home_access extended permit tcp object home-net host 192.168.60.10 eq 8443
+access-list home_access extended permit tcp object home-net object server-net eq 8006
+access-list home_access extended permit tcp object home-net object server-net eq ssh
+access-list home_access extended permit ip object home-net host 192.168.60.20
+access-list home_access extended permit ip object home-net host 192.168.60.40
+access-list home_access extended permit ip object home-net host 192.168.60.60
+access-list home_access extended deny ip any object wireless-net log
+access-list home_access extended deny ip any object kids-net log
+access-list home_access extended deny ip any object guest-net log
+access-list home_access extended deny ip any object server-net log
+access-list home_access extended permit ip object home-net any
+
+access-list wireless_access extended permit udp object wireless-net host 10.0.0.1 eq domain
+access-list wireless_access extended permit tcp object wireless-net host 10.0.0.1 eq domain
+access-list wireless_access extended deny ip any object server-net log
+access-list wireless_access extended deny ip any object home-net log
+access-list wireless_access extended deny ip any object kids-net log
+access-list wireless_access extended deny ip any object guest-net log
+access-list wireless_access extended permit ip object wireless-net any
+
+access-list kids_access extended permit udp object kids-net host 10.0.0.1 eq domain
+access-list kids_access extended permit tcp object kids-net host 10.0.0.1 eq domain
+access-list kids_access extended deny ip any any log
+
+access-list guest_access extended permit udp object guest-net host 10.0.0.1 eq domain
+access-list guest_access extended permit tcp object guest-net host 10.0.0.1 eq domain
+access-list guest_access extended deny ip any object home-net log
+access-list guest_access extended deny ip any object kids-net log
+access-list guest_access extended deny ip any object server-net log
+access-list guest_access extended deny ip any object wireless-net log
+access-list guest_access extended permit ip object guest-net any
+
+access-list server_access extended permit ip object server-net any
+
+access-group home_access     in interface home
+access-group wireless_access in interface wireless
+access-group kids_access     in interface kids
+access-group guest_access    in interface guest
+access-group server_access   in interface server
+
+! -----------------------------------------------------------
+! NAT
+! -----------------------------------------------------------
+object network home-nat
+ subnet 192.168.20.0 255.255.255.0
+ nat (home,outside1) dynamic interface
+object network wireless-nat
+ subnet 192.168.30.0 255.255.255.0
+ nat (wireless,outside1) dynamic interface
+object network kids-nat
+ subnet 192.168.40.0 255.255.255.0
+ nat (kids,outside1) dynamic interface
+object network guest-nat
+ subnet 192.168.50.0 255.255.255.0
+ nat (guest,outside1) dynamic interface
+object network server-nat
+ subnet 192.168.60.0 255.255.255.0
+ nat (server,outside1) dynamic interface
+
+! -----------------------------------------------------------
+! Routing
+! -----------------------------------------------------------
+route outside1 0.0.0.0 0.0.0.0 10.0.0.1 1
+
+! -----------------------------------------------------------
+! AAA / SSH / management
+! -----------------------------------------------------------
+aaa authentication ssh    console LOCAL
+aaa authentication enable console LOCAL
+
+username admin password REDACTED encrypted privilege 15
+
+ssh version 2
+ssh key-exchange group dh-group14-sha1
+ssh cipher encryption  high
+ssh cipher integrity   high
+crypto key generate rsa modulus 2048
+
+ssh 192.168.20.0 255.255.255.0 home
+
+no telnet outside1
+no http server enable
+
+! -----------------------------------------------------------
+! Threat-detection
+! -----------------------------------------------------------
+threat-detection basic-threat
+threat-detection statistics access-list
+threat-detection statistics tcp-intercept rate-interval 30 burst-rate 400 average-rate 200
+
+! -----------------------------------------------------------
+! Logging — remote syslog to Wazuh
+! -----------------------------------------------------------
+logging enable
+logging buffered notifications
+logging trap informational
+logging host server 192.168.60.20
+logging timestamp
+no logging asdm enable
+
+! -----------------------------------------------------------
+! Banner
+! -----------------------------------------------------------
+banner motd ^
+**********************************************************
+*  Authorized access only. All activity is logged.       *
+*  Disconnect immediately if you are not authorised.     *
+**********************************************************
+^
+
+! end of running-config

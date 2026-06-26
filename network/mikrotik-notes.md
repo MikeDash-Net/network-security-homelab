@@ -30,7 +30,7 @@ Internal VLANs reach the internet through the ASA and out via this masquerade on
 
 ## DNS
 
-DNS requests are forwarded to a filtering resolver over DNS-over-TLS; AdGuard Home on the server segment also provides network-wide DNS filtering. Dynamic DNS keeps a stable name pointed at the changing WAN address.
+The MikroTik forwards client DNS to **AdGuard Home** on the server segment — the filtering resolver — which applies network-wide blocklists and resolves upstream to public resolvers. Dynamic DNS keeps a stable name pointed at the changing WAN address.
 
 ## Hardening
 

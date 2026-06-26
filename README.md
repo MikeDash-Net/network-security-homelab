@@ -54,7 +54,7 @@ among the five active segments above.
 
 - **Dual-WAN** with PCC load-balancing and automatic failover (MikroTik)
 - **Inter-VLAN segmentation** with default-deny ACLs and logging (Cisco ASA)
-- **L2 hardening**: 802.1Q trunking, STP with BPDU protection, port security, SSH-only management (Aruba)
+- **L2 hardening** (Aruba): 802.1Q trunking, edge-port security (static MAC, shut on violation), STP BPDU protection with auto-recovery, unused ports disabled, management restricted via `authorized-managers`, SSH-only
 - **SIEM / IDS / EDR fundamentals** in a lab: log collection and correlation (Wazuh), network detection (Suricata), endpoint hunts (Velociraptor)
 - **Network-wide DNS filtering** (AdGuard Home)
 - **Infrastructure monitoring and alerting** (Zabbix)

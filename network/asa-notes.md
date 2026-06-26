@@ -11,7 +11,7 @@ Each VLAN terminates on its own tagged sub-interface, which is the segment's def
 ```
 interface GigabitEthernet0/1.20
  vlan 20
- nameif home
+ nameif MikeNetwork
  security-level 100
  ip address 192.168.20.1 255.255.255.0
 ```

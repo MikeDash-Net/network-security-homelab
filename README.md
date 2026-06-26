@@ -43,6 +43,11 @@ Full text topology, addressing and traffic flow: [`topology/`](topology/README.m
 
 Inter-VLAN policy on the ASA is **default-deny** with explicit, logged exceptions. Each segment has its own named ACL (`home_access`, `wireless_access`, `Server_VLAN_access_in`, …). There is no blanket `permit ip any any`.
 
+A management VLAN (**10**) is also **defined** on the switch and reserved for device
+management, but is **not yet populated** — management currently runs over VLAN 20,
+and migrating it is a planned hardening step. It has no IP or hosts and isn’t counted
+among the five active segments above.
+
 ## Repo map
 
 | Path | What's in it |

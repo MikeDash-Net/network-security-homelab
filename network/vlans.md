@@ -10,6 +10,13 @@ The lab is segmented into **five** purpose-based VLANs. The VLANs draw the lines
 | 50 | Guests | 192.168.50.0/24 | 192.168.50.1 | Untrusted |
 | 60 | Server / Lab | 192.168.60.0/24 | 192.168.60.1 | Restricted |
 
+> **Management VLAN (10) — defined, not yet populated.** The published Aruba config
+> shows a `vlan 10 "Management"` with `no ip address` and no untagged access ports.
+> It’s a dedicated management VLAN, reserved for device management but **not yet
+> populated** — device management currently runs over VLAN 20, and migrating it onto
+> VLAN 10 is a planned hardening step. That’s why VLAN 10 carries no IP and no hosts,
+> and it is **not counted** among the five active segments above.
+
 ## VLAN 20 — Home / MikeNetwork
 
 The trusted zone: my personal machines and the devices I actually keep data on. It gets the fewest inbound paths from anywhere else, because this is what everything else is being kept away from. The Aruba switch's management interface (`192.168.20.250`) lives here, reachable only from permitted sources.

@@ -44,6 +44,11 @@ A vertical view of the lab, from the internet edge down to the access layer. The
 
 The ASA terminates the inside trunk on a sub-interface per VLAN, and that sub-interface (`.1`) is the default gateway for the segment.
 
+> **Management VLAN (10):** also defined on the Aruba switch and reserved for
+> device management, but **not yet populated** (no IP, no hosts) — management
+> currently runs over VLAN 20. Migrating it onto VLAN 10 is a planned hardening
+> step; it is not one of the five active segments above.
+
 ## Hardware in the path
 
 | Role | Device |

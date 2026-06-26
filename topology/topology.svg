@@ -1,0 +1,84 @@
+<svg viewBox="0 0 900 770" xmlns="http://www.w3.org/2000/svg" role="img" font-family="ui-sans-serif,system-ui,Segoe UI,Roboto,sans-serif">
+  <title>Home lab network topology</title>
+  <desc>Internet via dual-WAN reaches a MikroTik RB5009 edge router, a /30 transit link to a Cisco ASA 5515-X Layer 3 firewall, then an 802.1Q trunk to an HPE Aruba switch which fans out to five active VLANs (20 Home, 30 Wireless, 40 Kids, 50 Guests, 60 Server/Lab). A management VLAN 10 is defined but reserved and unpopulated.</desc>
+  <defs>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#56cfd6"/></marker>
+    <filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <rect x="5" y="5" width="890" height="760" rx="20" fill="#0b0f15" stroke="#1b2533"/>
+  <text x="34" y="46" fill="#67737f" font-family="ui-monospace,Menlo,monospace" font-size="13" letter-spacing="3">HOME LAB · TOPOLOGY</text>
+  <text x="866" y="46" text-anchor="end" font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="#6fd99a">● online</text>
+
+  <line x1="450" y1="96"  x2="450" y2="128" stroke="#2f6f74" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="450" y1="202" x2="450" y2="242" stroke="#2f6f74" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="450" y1="324" x2="450" y2="366" stroke="#2f6f74" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="450" y1="440" x2="450" y2="470" stroke="#2f6f74" stroke-width="2"/>
+  <line x1="106" y1="470" x2="794" y2="470" stroke="#2f6f74" stroke-width="2"/>
+  <line x1="106" y1="470" x2="106" y2="500" stroke="#2f6f74" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="278" y1="470" x2="278" y2="500" stroke="#2f6f74" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="450" y1="470" x2="450" y2="500" stroke="#2f6f74" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="622" y1="470" x2="622" y2="500" stroke="#2f6f74" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="794" y1="470" x2="794" y2="500" stroke="#2f6f74" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="462" y="228" fill="#5a6671" font-family="ui-monospace,Menlo,monospace" font-size="11.5">/30 transit · 10.0.0.0/30</text>
+  <text x="462" y="350" fill="#5a6671" font-family="ui-monospace,Menlo,monospace" font-size="11.5">802.1Q trunk · all VLANs</text>
+
+  <g transform="translate(360,42)">
+    <rect width="180" height="54" rx="12" fill="#10161f" stroke="#2a3744"/>
+    <g transform="translate(30,27)" stroke="#8a97a5" stroke-width="2" fill="none"><path d="M-13 6 a8 8 0 0 1 1 -15 a10 10 0 0 1 19 1 a7 7 0 0 1 -1 14 Z"/></g>
+    <text x="58" y="24" fill="#cdd6df" font-size="15" font-weight="600">Internet</text>
+    <text x="58" y="41" fill="#727f8b" font-family="ui-monospace,Menlo,monospace" font-size="11">dual-WAN · PPPoE ×2</text>
+  </g>
+
+  <g transform="translate(260,128)">
+    <rect width="380" height="72" rx="13" fill="#10161f" stroke="#2a3744"/>
+    <rect width="4" height="72" rx="2" fill="#56cfd6"/>
+    <g transform="translate(36,36)" stroke="#56cfd6" stroke-width="2" fill="none" stroke-linecap="round"><path d="M-12 -4 H12 M7 -9 L13 -4 L7 1"/><path d="M12 8 H-12 M-7 3 L-13 8 L-7 13"/></g>
+    <text x="68" y="29" fill="#eef3f7" font-size="16" font-weight="600">MikroTik RB5009</text>
+    <text x="68" y="50" fill="#8a97a5" font-family="ui-monospace,Menlo,monospace" font-size="12">edge · dual-WAN PCC + failover · NAT · DDNS</text>
+    <text x="364" y="29" text-anchor="end" fill="#56cfd6" font-family="ui-monospace,Menlo,monospace" font-size="11">mgmt 10.0.0.1</text>
+  </g>
+
+  <g transform="translate(250,242)" filter="url(#gl)">
+    <rect width="400" height="82" rx="14" fill="#0f141b" stroke="#56cfd6" stroke-opacity="0.55"/>
+    <rect width="4" height="82" rx="2" fill="#56cfd6"/>
+    <g transform="translate(40,41)" stroke="#56cfd6" stroke-width="2" fill="none" stroke-linejoin="round"><path d="M0 -15 L13 -9 V3 C13 12 7 17 0 19 C-7 17 -13 12 -13 3 V-9 Z"/><path d="M-5 1 L-1 6 L7 -5" stroke-linecap="round"/></g>
+    <text x="74" y="31" fill="#f3f7fa" font-size="17" font-weight="600">Cisco ASA 5515-X</text>
+    <text x="74" y="53" fill="#aeb9c4" font-family="ui-monospace,Menlo,monospace" font-size="12">L3 gateway · inter-VLAN ACLs (default-deny) · NAT</text>
+    <text x="74" y="70" fill="#67737f" font-family="ui-monospace,Menlo,monospace" font-size="11">sub-interface .1 per VLAN · outside 10.0.0.2</text>
+  </g>
+
+  <g transform="translate(260,368)">
+    <rect width="380" height="72" rx="13" fill="#10161f" stroke="#2a3744"/>
+    <rect width="4" height="72" rx="2" fill="#56cfd6"/>
+    <g transform="translate(36,32)" stroke="#56cfd6" stroke-width="2" fill="none"><rect x="-14" y="-9" width="28" height="18" rx="2"/></g>
+    <g fill="#56cfd6"><rect x="24" y="38" width="4" height="4"/><rect x="31" y="38" width="4" height="4"/><rect x="38" y="38" width="4" height="4"/><rect x="45" y="38" width="4" height="4"/></g>
+    <text x="68" y="29" fill="#eef3f7" font-size="16" font-weight="600">HPE Aruba 2530-24-PoE+</text>
+    <text x="68" y="50" fill="#8a97a5" font-family="ui-monospace,Menlo,monospace" font-size="12">L2 · 802.1Q trunk · STP/BPDU · port security</text>
+    <text x="364" y="29" text-anchor="end" fill="#56cfd6" font-family="ui-monospace,Menlo,monospace" font-size="11">mgmt 192.168.20.250</text>
+  </g>
+
+  <line x1="640" y1="404" x2="690" y2="404" stroke="#4a525c" stroke-width="2" stroke-dasharray="4 4"/>
+  <g transform="translate(690,378)">
+    <rect width="186" height="54" rx="11" fill="#0d1117" stroke="#4a525c" stroke-dasharray="5 4"/>
+    <text x="14" y="23" fill="#9aa6b2" font-family="ui-monospace,Menlo,monospace" font-size="12.5">VLAN 10 · Management</text>
+    <text x="14" y="41" fill="#5a6671" font-family="ui-monospace,Menlo,monospace" font-size="11">reserved · no IP, no hosts</text>
+  </g>
+
+  <g font-family="ui-monospace,Menlo,monospace">
+    <g transform="translate(31,500)"><rect width="150" height="86" rx="12" fill="#10161f" stroke="#2a3744"/><rect width="150" height="4" rx="2" fill="#56cfd6"/><text x="14" y="30" fill="#56cfd6" font-size="13">VLAN 20</text><text x="14" y="51" fill="#dde4eb" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="600">Home</text><text x="14" y="70" fill="#67737f" font-size="11">192.168.20.0/24</text></g>
+    <g transform="translate(203,500)"><rect width="150" height="86" rx="12" fill="#10161f" stroke="#2a3744"/><rect width="150" height="4" rx="2" fill="#5b8def"/><text x="14" y="30" fill="#5b8def" font-size="13">VLAN 30</text><text x="14" y="51" fill="#dde4eb" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="600">Wireless</text><text x="14" y="70" fill="#67737f" font-size="11">192.168.30.0/24</text></g>
+    <g transform="translate(375,500)"><rect width="150" height="86" rx="12" fill="#10161f" stroke="#2a3744"/><rect width="150" height="4" rx="2" fill="#a98bd6"/><text x="14" y="30" fill="#a98bd6" font-size="13">VLAN 40</text><text x="14" y="51" fill="#dde4eb" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="600">Kids</text><text x="14" y="70" fill="#67737f" font-size="11">192.168.40.0/24</text></g>
+    <g transform="translate(547,500)"><rect width="150" height="86" rx="12" fill="#10161f" stroke="#2a3744"/><rect width="150" height="4" rx="2" fill="#e0a96f"/><text x="14" y="30" fill="#e0a96f" font-size="13">VLAN 50</text><text x="14" y="51" fill="#dde4eb" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="600">Guests</text><text x="14" y="70" fill="#67737f" font-size="11">192.168.50.0/24</text></g>
+    <g transform="translate(719,500)"><rect width="150" height="86" rx="12" fill="#10161f" stroke="#2a3744"/><rect width="150" height="4" rx="2" fill="#6fd99a"/><text x="14" y="30" fill="#6fd99a" font-size="13">VLAN 60</text><text x="14" y="51" fill="#dde4eb" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="600">Server / Lab</text><text x="14" y="70" fill="#67737f" font-size="11">192.168.60.0/24</text></g>
+  </g>
+
+  <g transform="translate(335,620)">
+    <rect width="230" height="50" rx="11" fill="#10161f" stroke="#2a3744"/>
+    <g transform="translate(28,25)" stroke="#56cfd6" stroke-width="2" fill="none" stroke-linecap="round"><path d="M-10 4 a13 13 0 0 1 20 0"/><path d="M-6 8 a8 8 0 0 1 12 0"/></g><circle cx="28" cy="33" r="1.6" fill="#56cfd6"/>
+    <text x="52" y="22" fill="#cdd6df" font-size="13" font-weight="600">UniFi U6+</text>
+    <text x="52" y="39" fill="#727f8b" font-family="ui-monospace,Menlo,monospace" font-size="11">Wi-Fi · each SSID → its VLAN</text>
+  </g>
+
+  <text x="450" y="712" text-anchor="middle" fill="#5a6671" font-family="ui-monospace,Menlo,monospace" font-size="12">5 active VLANs · default-deny between segments on the ASA · RFC1918 addressing (sanitized)</text>
+</svg>

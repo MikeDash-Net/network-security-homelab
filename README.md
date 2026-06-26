@@ -17,17 +17,7 @@ I'm **Mihail Pascal**, a career-changer moving from ~9 years in web, design and 
 
 ## Topology (overview)
 
-```
-Internet  (dual-WAN, PPPoE ×2)
-   │
-MikroTik RB5009        edge · PCC load-balance + failover · NAT · DDNS · mgmt 10.0.0.1
-   │  /30 transit  10.0.0.0/30
-Cisco ASA 5515-X       L3 gateway for every VLAN · inter-VLAN ACLs · NAT · outside 10.0.0.2
-   │  802.1Q trunk (all VLANs)
-HPE Aruba 2530-24-PoE+ L2 switch · mgmt 192.168.20.250
-   │
-VLAN 20 · VLAN 30 · VLAN 40 · VLAN 50 · VLAN 60      (Wi-Fi via UniFi U6+, SSID → VLAN)
-```
+![Home lab network topology — Internet to MikroTik edge router, Cisco ASA Layer 3 firewall, HPE Aruba switch, and five active VLANs (20/30/40/50/60) with a reserved management VLAN 10](topology/topology.svg)
 
 Full text topology, addressing and traffic flow: [`topology/`](topology/README.md)
 

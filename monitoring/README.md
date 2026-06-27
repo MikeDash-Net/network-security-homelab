@@ -4,12 +4,14 @@ Zabbix 7.0 watches the lab for availability and health, with email alerting when
 
 ## What's monitored
 
-**14 monitored hosts:**
+**12 monitored hosts** — the count Zabbix's host-availability view reports (9 via agent, 3 via SNMP):
 
 - **1** Proxmox hypervisor (agent)
-- **7** LXC service containers (Zabbix agent)
+- **7** LXC service containers (agent)
+- the **Zabbix server** itself (agent)
 - **3** network devices — ASA, MikroTik, Aruba — via **SNMP**
-- plus the **Proxmox VE API**, the **Zabbix server** itself, and **website monitoring**
+
+It also pulls the **Proxmox VE API** and runs **website uptime** checks — extra data sources, not separate hosts in the count above.
 
 ## Collection
 

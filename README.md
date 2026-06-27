@@ -13,7 +13,7 @@ I'm **Mihail Pascal**, a career-changer moving from ~9 years in web, design and 
 
 ## At a glance
 
-`5 VLANs` · `3 network devices` · `14 monitored hosts` · `open-source SOC stack`
+`5 VLANs` · `3 network devices` · `12 monitored hosts` · `open-source SOC stack`
 
 ## Topology (overview)
 
